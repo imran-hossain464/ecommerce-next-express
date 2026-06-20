@@ -14,21 +14,23 @@ const app = express();
 const port = Number(process.env.PORT ?? 4000);
 
 app.use(helmet());
-
-// ✅ REPLACE YOUR OLD CORS WITH THIS
 const allowedOrigins = [
-  "https://ecommerce-next-express-qxm24p6ds.vercel.app",
+  "https://ecommerce-next-express-web.vercel.app",
   "http://localhost:3000",
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
+      // allow mobile apps / postman / server-to-server
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
       }
+
+      // ❌ DO NOT throw error
+      return callback(null, false);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -36,7 +38,7 @@ app.use(
   })
 );
 
-// 🔥 IMPORTANT: must be added right after cors
+// IMPORTANT
 app.options("*", cors());
 
 app.use(express.json({ limit: "10mb" }));
