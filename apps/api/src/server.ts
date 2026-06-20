@@ -14,15 +14,31 @@ const app = express();
 const port = Number(process.env.PORT ?? 4000);
 
 app.use(helmet());
+
+// ✅ REPLACE YOUR OLD CORS WITH THIS
+const allowedOrigins = [
+  "https://ecommerce-next-express-qxm24p6ds.vercel.app",
+  "http://localhost:3000",
+];
+
 app.use(
   cors({
-    origin: [
-      "https://ecommerce-next-express-qxm24p6ds.vercel.app",
-      "http://localhost:3000",
-    ],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// 🔥 IMPORTANT: must be added right after cors
+app.options("*", cors());
+
 app.use(express.json({ limit: "10mb" }));
 
 app.get("/health", (_req, res) => {
